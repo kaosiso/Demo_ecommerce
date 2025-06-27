@@ -1,15 +1,14 @@
-import Cart from "../../models/cartSchema.js"
+import Cart from "../../models/cartSchema.js";
 import Product from "../../models/productSchema.js";
 
-
- const createCartItem = async (req, res) => {
+const createCartItem = async (req, res) => {
   const user = req.user;
-  const { incomingPId } = req.params;
+  const { id: productId } = req.params;
 
   try {
-    const product = await Product.findById(incomingPId);
+    const product = await Product.findById(productId);
     if (!product) {
-      return res.status(400).json({ message: 'Product not found' });
+      return res.status(400).json({ message: "Product not found" });
     }
 
     let cart = await Cart.findOne({ userId: user._id });
@@ -17,23 +16,25 @@ import Product from "../../models/productSchema.js";
     if (!cart) {
       const newCart = new Cart({
         userId: user._id,
-        products: [{ productId: incomingPId, quantity: 1 }]
+        products: [{ productId: productId, quantity: 1 }],
       });
       await newCart.save();
-      return res.status(201).json({ message: 'Cart created with new product', cart: newCart });
+      return res
+        .status(201)
+        .json({ message: "Cart created with new product", cart: newCart });
     } else {
       const productIndex = cart.products.findIndex(
-        (item) => item.productId.toString() === incomingPId
+        (item) => item.productId.toString() === productId
       );
 
       if (productIndex > -1) {
         cart.products[productIndex].quantity += 1;
       } else {
-        cart.products.push({ productId: incomingPId, quantity: 1 });
+        cart.products.push({ productId: productId, quantity: 1 });
       }
 
       await cart.save();
-      return res.status(200).json({ message: 'Cart updated', cart });
+      return res.status(200).json({ message: "Cart updated", cart });
     }
   } catch (error) {
     console.error(error);
@@ -41,4 +42,4 @@ import Product from "../../models/productSchema.js";
   }
 };
 
-export default createCartItem
+export default createCartItem;
