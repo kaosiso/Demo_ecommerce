@@ -18,10 +18,7 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    Admin: {
-        type: Boolean,
-        default: false
-    },
+  
     profile: {
         country: {
             type: String,
@@ -39,7 +36,12 @@ const userSchema = new mongoose.Schema({
             type: String,
             required: true
         }   
-    }
+    },
+resetPasswordToken:  {
+            type: String,
+        },
+resetPasswordExpire: Date,
+
 }, { timestamps: true })
 const User = mongoose.model('User', userSchema);
 export default User;

@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router } from "express";
 import {
   createUser,
   getAllUsers,
@@ -6,37 +6,55 @@ import {
   getByqueryParams,
   editUser,
   editProfile,
-  deleteUser
-} from '../controller/userApis/index.js';
+  deleteUser,
+} from "../controller/userApis/index.js";
 
-import authMiddleware from '../middleware/auth.middleware.js';
+import authMiddleware from "../middleware/auth.middleware.js";
 
 const userRouter = Router();
 
-// Optional: extract this later into adminMiddleware.js
-const adminCheck = async (req, res, next) => { 
-  const user = req.user;
-  if (user?.Admin) {
-    return next();
-  }
-  res.status(401).json({ message: "You are not authorized to access this route" });
-};
+// Public route
+userRouter.post("/user/create", createUser);
 
-// Routes
-userRouter
-  // Create user
-  .post('/user/create', createUser)
+// Admin-only route
+userRouter.get("/users", authMiddleware("admin"), getAllUsers);
 
-  // Read users
-  .get('/users', authMiddleware, getAllUsers)
-  .get('/user/:id', getUser)
-  .get('/usersbyquery', getByqueryParams)
+// Logged-in users
+userRouter.get("/usersbyquery", authMiddleware(), getByqueryParams);
+userRouter.get("/user/:id", authMiddleware(), getUser);
 
-  // Update user
-  .put('/user/update/:id', authMiddleware, editUser)
-  .put('/profile/update/:id', authMiddleware, editProfile)
- 
-  // Delete user
-  .delete('/user/delete/:id', authMiddleware, deleteUser);
+// Update/Delete routes: only user themselves or admin
+userRouter.put(
+  "/user/update/:id",
+  authMiddleware(),
+  async (req, res, next) => {
+    if (req.user.admin || req.user._id.toString() === req.params.id)
+      return next();
+    res.status(403).json({ message: "You are not authorized" });
+  },
+  editUser
+);
+
+userRouter.put(
+  "/profile/update/:id",
+  authMiddleware(),
+  async (req, res, next) => {
+    if (req.user.admin || req.user._id.toString() === req.params.id)
+      return next();
+    res.status(403).json({ message: "You are not authorized" });
+  },
+  editProfile
+);
+
+userRouter.delete(
+  "/user/delete/:id",
+  authMiddleware(),
+  async (req, res, next) => {
+    if (req.user.admin || req.user._id.toString() === req.params.id)
+      return next();
+    res.status(403).json({ message: "You are not authorized" });
+  },
+  deleteUser
+);
 
 export default userRouter;
