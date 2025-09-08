@@ -8,12 +8,12 @@ import {
   allOrders,
   userOrders,
   updateStatus,
-} from "../controllers/order.controller.js";
+} from "../controllers/order/index.js";
 
 const router = express.Router();
 
 // User routes
-router.post("/place", authMiddleware(), placeOrder); // Cash on Delivery
+router.post("/place", authMiddleware(), placeOrder);
 router.post("/place-stripe", authMiddleware(), placeOrderStripe);
 router.post("/verify-stripe", authMiddleware(), verifyStripe);
 router.post("/place-paystack", authMiddleware(), placeOrderPaystack);
